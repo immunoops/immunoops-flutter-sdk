@@ -96,10 +96,10 @@ Os atributos seguem as convenções do OpenTelemetry onde elas existem
 | Erros | Log com `event.type` `mobile.crash` (não tratado) ou `mobile.error`, `exception.type`, `exception.message`, `exception.stacktrace`, `exception.fingerprint`, `screen.name`, `journey.name`. No máximo 5 por minuto por erro igual. |
 | Rede | `http.client.request.duration_ms` com `http.request.method`, `http.response.status_code`, `server.address`, `url.template` e `error.type` (`timeout`, `dns_error`, `tls_error`, `connection_error` ou o código). 5xx e falhas: log `mobile.network.error` com `trace_id`; 429: aviso; 401/403: só métrica. |
 | Jornadas | `journey.duration_ms` por `journey.name` e `journey.outcome`; falha gera log `mobile.journey.failure`. |
-| Telas | Evento `screen_view` e `ui.screen.duration_ms`. Só rotas de página; ids na rota viram `:id`. |
+| Telas | Evento `screen_view` e `ui.screen.duration_ms`. Só rotas de página; ids na rota viram `:id`. Nome: o da rota; sem nome (`pageBuilder`), o endereço do `Router` (`/login`) ou, sem Router, o tipo do widget da tela. |
 | Frames | `ui.frames.total`, `.slow`, `.frozen`, `ui.frame.jank_ratio`, `ui.frame.worst_ms` por tela. |
 | Abertura | `app.startup.duration_ms` com `startup.type` `cold` (init → primeiro frame) ou `warm` (volta ao primeiro plano). |
-| Memória | `app.memory.rss_mb`; aviso de pouca memória do sistema vira evento `memory_pressure` e log `mobile.memory.pressure`. |
+| Memória | `app.memory.rss_mb`; aviso de pouca memória do sistema, com o app em primeiro plano, vira evento `memory_pressure` e log `mobile.memory.pressure`. |
 | Aparelho | `device.battery.level`; `connectivity_change`, `network_lost`, `network_restored`. |
 | Sessões | `session_start` (com `session.previous_id`), `app_background`, `app_foreground`. |
 | Autodiagnóstico | `immunoops.sdk_handshake` 30 s depois do init. |
@@ -180,6 +180,7 @@ Custo medido por chamada: 3 a 6 µs para métrica, log e evento
 | D020 / D021 | Android: `INTERNET` no manifesto principal, `minSdk` |
 | D022 | iOS: dados de crash e desempenho declarados |
 | D023 / D044 | Web: origem liberada no CORS e preflight com 2xx |
+| D024 | Android: plugin resolvido que o Android Gradle plugin do app não compila |
 | D030 | Build ofuscado: guardar os símbolos de cada versão |
 | D040–D043 | Chave, endpoint alcançável, envio de teste (`--send-test`) |
 

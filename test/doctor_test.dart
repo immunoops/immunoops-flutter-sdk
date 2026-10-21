@@ -79,6 +79,34 @@ void main() {
     expect(checks['D010']!.detail, 'lib/main.dart');
   });
 
+  test('a plugin newer than the app\'s Android Gradle plugin is caught',
+      () async {
+    const lock = 'packages:\n'
+        '  immunoops_flutter:\n'
+        '    version: "0.2.0"\n'
+        '  connectivity_plus:\n'
+        '    version: "7.3.1"\n';
+    Future<Map<String, DoctorCheck>> withAgp(String agp, String lock) => _run({
+          'pubspec.yaml': _pubspec,
+          'pubspec.lock': lock,
+          'android/app/src/main/AndroidManifest.xml':
+              '<uses-permission android:name="android.permission.INTERNET"/>',
+          'android/settings.gradle':
+              'plugins {\n  id "com.android.application" version "$agp" apply false\n}',
+        });
+
+    final old = await withAgp('8.7.2', lock);
+    expect(old['D024']!.status, CheckStatus.error);
+    expect(old['D024']!.detail, contains('connectivity_plus 7.3.1'));
+    expect(old['D024']!.fix, contains('connectivity_plus: "<7.1.0"'));
+
+    expect((await withAgp('8.9.1', lock))['D024'], isNull);
+    expect(
+        (await withAgp(
+            '8.7.2', lock.replaceFirst('"7.3.1"', '"7.0.0"')))['D024'],
+        isNull);
+  });
+
   test('missing pieces are each reported with a fix', () async {
     final checks = await _run({
       'pubspec.yaml': 'name: app\ndependencies:\n  dio: ^5.0.0\n',

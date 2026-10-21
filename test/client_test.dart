@@ -213,6 +213,27 @@ void main() {
     await client.shutdown();
   });
 
+  testWidgets('memory pressure counts only in the foreground', (tester) async {
+    final client =
+        await started(tester, captures: const ImmunoOpsCaptures(device: true));
+    // Leaving the screen: Android's UI_HIDDEN arrives as memory pressure.
+    client
+      ..didChangeAppLifecycleState(AppLifecycleState.inactive)
+      ..didChangeAppLifecycleState(AppLifecycleState.hidden)
+      ..didHaveMemoryPressure();
+    await client.buffer.flush(force: true);
+    expect(sent('events').map((e) => e['event_name']),
+        isNot(contains('memory_pressure')));
+
+    client
+      ..didChangeAppLifecycleState(AppLifecycleState.resumed)
+      ..didHaveMemoryPressure();
+    await client.buffer.flush(force: true);
+    expect(sent('events').map((e) => e['event_name']),
+        contains('memory_pressure'));
+    await client.shutdown();
+  });
+
   testWidgets('the self-check names what is missing and sends the handshake',
       (tester) async {
     final client = await started(tester);

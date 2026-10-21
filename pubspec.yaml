@@ -29,6 +29,8 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
+  # Tests only: screen names of go_router pages with no name.
+  go_router: ">=14.0.0 <18.0.0"
 
 executables:
   doctor:

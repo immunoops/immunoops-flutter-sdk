@@ -397,6 +397,7 @@ List<DoctorCheck> _checkPlatforms(_Project project, DoctorOptions options) {
         fix: 'minSdk = 21 em android/app/build.gradle(.kts).',
       ));
     }
+    checks.addAll(_checkAndroidGradlePlugin(project));
   }
 
   if (project.exists('ios')) {
@@ -480,6 +481,78 @@ List<DoctorCheck> _checkRelease(_Project project) {
 }
 
 // ---------------------------------------------------------- connection
+
+/// Plugin versions whose Android library needs a newer Android Gradle
+/// plugin than older apps carry: from [0] on, AGP [1] or later.
+const _pluginMinAgp = {
+  // androidx.core 1.18.
+  'connectivity_plus': ('7.1.0', '8.9.1'),
+};
+
+final _agpVersion = RegExp(
+    r'''(?:id\s*\(?\s*["']com\.android\.application["']\s*\)?\s*version\s*["']|com\.android\.tools\.build:gradle:)([0-9.]+)''');
+
+/// D024: a resolved plugin that the app's Android Gradle plugin cannot
+/// build (checkDebugAarMetadata fails with "requires Android Gradle
+/// plugin X or higher").
+List<DoctorCheck> _checkAndroidGradlePlugin(_Project project) {
+  final gradle = [
+    'android/settings.gradle',
+    'android/settings.gradle.kts',
+    'android/build.gradle',
+    'android/build.gradle.kts',
+  ].map(project.read).whereType<String>().join('\n');
+  final agpRaw = _agpVersion.firstMatch(gradle)?.group(1);
+  final lock = project.read('pubspec.lock');
+  if (agpRaw == null || lock == null) return const [];
+  final Version agp;
+  final Object? packages;
+  try {
+    agp = Version.parse(_padVersion(agpRaw));
+    packages = (loadYaml(lock) as Map?)?['packages'];
+  } catch (_) {
+    return const [];
+  }
+  if (packages is! Map) return const [];
+  final problems = <String>[];
+  final pins = <String>[];
+  for (final MapEntry(key: name, value: (from, minAgp))
+      in _pluginMinAgp.entries) {
+    final raw = (packages[name] as Map?)?['version'];
+    if (raw is! String) continue;
+    final Version resolved;
+    try {
+      resolved = Version.parse(raw);
+    } on FormatException {
+      continue;
+    }
+    if (resolved >= Version.parse(from) && agp < Version.parse(minAgp)) {
+      problems.add('$name $resolved pede AGP $minAgp+');
+      pins.add('$name: "<$from"');
+    }
+  }
+  if (problems.isEmpty) return const [];
+  return [
+    DoctorCheck(
+      code: 'D024',
+      title: 'Android: versão do Android Gradle plugin',
+      status: CheckStatus.error,
+      detail: 'O app usa AGP $agpRaw e ${problems.join('; ')}: o build '
+          'Android falha em checkDebugAarMetadata.',
+      fix: 'Suba o AGP (com.android.application em android/settings.gradle) '
+          'ou prenda no pubspec.yaml do app: ${pins.join(', ')}.',
+    ),
+  ];
+}
+
+/// "8.7" → "8.7.0", for Version.parse.
+String _padVersion(String raw) {
+  final parts = raw.split('.');
+  while (parts.length < 3) {
+    parts.add('0');
+  }
+  return parts.take(3).join('.');
+}
 
 Future<List<DoctorCheck>> _checkConnection(
   _Project project,

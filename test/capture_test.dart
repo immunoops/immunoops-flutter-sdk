@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:immunoops_flutter/src/crash/crash_reporter.dart';
@@ -52,6 +53,91 @@ void main() {
       sink = FakeSink();
       now = DateTime(2026);
       tracker = ScreenTracker(sink, now: () => now);
+    });
+
+    test('a route name or a path key names the screen', () {
+      expect(
+          screenNameOf(const RouteSettings(name: '/aulas/42')), '/aulas/:id');
+      expect(
+          screenNameOf(
+              const _Page(key: ValueKey('/aulas/42'), child: Text('x'))),
+          '/aulas/:id');
+      // go_router's hash page keys are not paths.
+      expect(screenNameOf(const _Page(key: ValueKey('1234'), child: Text('x'))),
+          isNull);
+      expect(screenNameOf(const RouteSettings()), isNull);
+    });
+
+    for (final reflect in [false, true]) {
+      testWidgets(
+          'go_router pages with no name are named by location '
+          '(optionURLReflectsImperativeAPIs: $reflect)', (tester) async {
+        GoRouter.optionURLReflectsImperativeAPIs = reflect;
+        addTearDown(() => GoRouter.optionURLReflectsImperativeAPIs = false);
+        // No key and no name, like most apps' pageBuilder pages.
+        Page<void> page() =>
+            // ignore: prefer_const_constructors
+            NoTransitionPage<void>(child: const _Wrapper());
+        final router = GoRouter(
+          observers: [ImmunoOpsNavigatorObserver(() => tracker)],
+          redirect: (_, state) =>
+              state.matchedLocation == '/antiga' ? '/nova' : null,
+          routes: [
+            for (final path in ['/', '/aulas/:id', '/perfil', '/nova'])
+              GoRoute(path: path, pageBuilder: (_, __) => page()),
+            GoRoute(path: '/antiga', builder: (_, __) => const SizedBox()),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        Future<void> settle() async {
+          await tester.pumpAndSettle();
+          await tester.pump(const Duration(milliseconds: 1));
+        }
+
+        await settle();
+        router.go('/aulas/42');
+        await settle();
+        router.push('/perfil');
+        await settle();
+        router.push('/aulas/7');
+        await settle();
+        router.pop();
+        await settle();
+        router.go('/antiga');
+        await settle();
+
+        expect(sink.events.map((e) => e.payload['screen.name']), [
+          '/',
+          '/aulas/:id',
+          '/perfil',
+          '/aulas/:id',
+          '/perfil',
+          '/nova',
+        ]);
+      });
+    }
+
+    testWidgets('with no router, an unnamed page is named by its widget',
+        (tester) async {
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(MaterialApp(
+        navigatorKey: navigator,
+        navigatorObservers: [ImmunoOpsNavigatorObserver(() => tracker)],
+        home: const Text('home'),
+      ));
+      navigator.currentState!.push(
+          const _Page(child: _Splash()).createRoute(navigator.currentContext!));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 1));
+      // A MaterialPageRoute with no name says nothing: not a screen.
+      navigator.currentState!
+          .push(MaterialPageRoute<void>(builder: (_) => const Text('x')));
+      await tester.pumpAndSettle();
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+
+      expect(
+          sink.events.map((e) => e.payload['screen.name']), ['/', '_Splash']);
     });
 
     testWidgets('pages become screens; dialogs do not', (tester) async {
@@ -346,4 +432,31 @@ class _ThrowingSink extends FakeSink {
     Map<String, Object?> context = const {},
   }) =>
       throw StateError('sink broke');
+}
+
+/// Like go_router's CustomTransitionPage: a Page with a `child` and no name.
+class _Page extends Page<void> {
+  const _Page({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Route<void> createRoute(BuildContext context) => PageRouteBuilder<void>(
+        settings: this,
+        pageBuilder: (_, __, ___) => child,
+      );
+}
+
+class _Wrapper extends StatelessWidget {
+  const _Wrapper();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
+class _Splash extends StatelessWidget {
+  const _Splash();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
 }

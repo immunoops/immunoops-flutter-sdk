@@ -1,3 +1,20 @@
+## Não lançado
+
+Ajustes da integração no app CRIA.
+
+- Telas: rotas sem nome nem endereço usam a chave da página, se for um
+  caminho, ou o tipo do widget da tela; rota sem nada disso não vira mais
+  `screen_view` com o tipo da rota (`_CustomTransitionPageRoute`).
+- Telas: rotas sem nome passam a usar o endereço do `Router` (go_router
+  ou outro): `/login`, `/aulas/:id`. O nome fica guardado por rota, para o
+  `pop` voltar ao nome certo mesmo com `optionURLReflectsImperativeAPIs`
+  desligado; `go` entre páginas sem `key` também é capturado.
+- Memória: o aviso de memória que o Android manda toda vez que o app sai
+  da tela (`UI_HIDDEN`) não conta mais como `memory_pressure`; só avisos
+  com o app em primeiro plano.
+- Doctor: `D024` acusa plugin resolvido que o Android Gradle plugin do app
+  não compila (`connectivity_plus` 7.1+ pede AGP 8.9.1+).
+
 ## 0.2.0
 
 Alinhamento com o planejamento do SDK mobile (backlog IMOB e documento de

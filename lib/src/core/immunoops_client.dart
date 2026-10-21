@@ -98,6 +98,7 @@ class ImmunoOpsClient with WidgetsBindingObserver implements TelemetrySink {
   bool _stopped = false;
   Timer? _tick;
   Timer? _selfCheck;
+  AppLifecycleState? _lifecycle;
   final _ready = Completer<void>();
 
   @override
@@ -186,6 +187,7 @@ class ImmunoOpsClient with WidgetsBindingObserver implements TelemetrySink {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _lifecycle = state;
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.hidden:
@@ -209,7 +211,12 @@ class ImmunoOpsClient with WidgetsBindingObserver implements TelemetrySink {
 
   @override
   void didHaveMemoryPressure() {
-    if (options.captures.device) memory.onPressure();
+    // Android sends onTrimMemory(UI_HIDDEN) every time the app leaves the
+    // screen, and Flutter passes it on as memory pressure: only a warning
+    // in the foreground is real pressure.
+    final inForeground =
+        _lifecycle == null || _lifecycle == AppLifecycleState.resumed;
+    if (options.captures.device && inForeground) memory.onPressure();
   }
 
   // ------------------------------------------------------------- recording
