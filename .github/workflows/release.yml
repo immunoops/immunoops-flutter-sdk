@@ -19,11 +19,13 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+# AR_* and not GCP_*: google-github-actions/auth exports GCP_PROJECT (the
+# project of the service account), which silently overrode ours on 0.2.1.
 env:
-  GCP_PROJECT: immunoops-artifacts
-  GCP_LOCATION: us-central1
-  GCP_REPOSITORY: sdk
-  GCP_PACKAGE: immunoops-flutter
+  AR_PROJECT: immunoops-artifacts
+  AR_LOCATION: us-central1
+  AR_REPOSITORY: sdk
+  AR_PACKAGE: immunoops-flutter
   WIF_PROVIDER: projects/880246299331/locations/global/workloadIdentityPools/github-actions/providers/github
   WIF_SERVICE_ACCOUNT: ci-sdk-flutter@immunoops-bootstrap.iam.gserviceaccount.com
 
@@ -84,17 +86,23 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
       - name: A published version is immutable
         run: |
-          if gcloud artifacts versions describe "$VERSION" \
-              --package="$GCP_PACKAGE" --repository="$GCP_REPOSITORY" \
-              --location="$GCP_LOCATION" --project="$GCP_PROJECT" >/dev/null 2>&1; then
-            echo "version $VERSION already exists in $GCP_REPOSITORY; bump the version instead" >&2
+          # Only "not found" lets the release go on: any other error (a
+          # permission or project mistake) must stop it, not pass silently.
+          if out="$(gcloud artifacts versions describe "$VERSION" \
+              --package="$AR_PACKAGE" --repository="$AR_REPOSITORY" \
+              --location="$AR_LOCATION" --project="$AR_PROJECT" 2>&1)"; then
+            echo "version $VERSION already exists in $AR_REPOSITORY; bump the version instead" >&2
+            exit 1
+          fi
+          if ! echo "$out" | grep -qiE 'not found|NOT_FOUND|does not exist'; then
+            echo "could not check the version: $out" >&2
             exit 1
           fi
       - name: Upload to Artifact Registry
         run: |
           gcloud artifacts generic upload \
-            --project="$GCP_PROJECT" --location="$GCP_LOCATION" \
-            --repository="$GCP_REPOSITORY" --package="$GCP_PACKAGE" \
+            --project="$AR_PROJECT" --location="$AR_LOCATION" \
+            --repository="$AR_REPOSITORY" --package="$AR_PACKAGE" \
             --version="$VERSION" --source-directory=dist
       - name: GitHub Release
         env:
