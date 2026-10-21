@@ -117,7 +117,8 @@ class ImmunoOpsNavigatorObserver extends NavigatorObserver {
     if (route is PageRoute && previousRoute != null) _enterLater(previousRoute);
   }
 
-  @override
+  /// Flutter 3.27+ (older versions never call it): the top route changed.
+  // ignore: annotate_overrides
   void didChangeTop(Route<dynamic> topRoute, Route<dynamic>? previousTopRoute) {
     _navigated();
     _top = topRoute;
