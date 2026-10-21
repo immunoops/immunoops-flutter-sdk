@@ -1,0 +1,88 @@
+# CI of the Flutter SDK: analysis, tests on
+# the oldest supported Flutter and on stable, the doctor's own check, and
+# the example's web build (proves no dart:io leaks into web code). A tag
+# vX.Y.Z must match the pubspec version, so a published
+# tag always names the code it says it does (docs/publishing.md).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (flutter ${{ matrix.label }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The minimum in pubspec.yaml, and the current stable (an empty
+          # version means the latest of the channel).
+          - label: '3.24.5'
+            version: '3.24.5'
+          - label: stable
+            version: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.version }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # The formatter's style changed across Dart versions: check it on
+      # stable only.
+      - if: matrix.label == 'stable'
+        run: dart format --output=none --set-exit-if-changed lib test bin
+      - run: flutter analyze
+      - run: flutter test
+      - name: Doctor runs as a plain Dart command
+        run: dart run bin/doctor.dart --project example --json > /dev/null
+
+  web:
+    name: example web build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Build the example for the web (JS and Wasm)
+        working-directory: example
+        run: |
+          flutter create --platforms=web --project-name immunoops_flutter_example .
+          flutter build web --release
+          flutter build web --release --wasm
+
+  release-check:
+    name: tag matches pubspec
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(grep -E '^version:' pubspec.yaml | awk '{print $2}')"
+          if [ "$tag" != "$version" ]; then
+            echo "Tag $tag does not match pubspec version $version" >&2
+            exit 1
+          fi
+          grep -q "^## $version$" CHANGELOG.md || {
+            echo "CHANGELOG.md has no entry for $version" >&2
+            exit 1
+          }

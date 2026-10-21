@@ -1,0 +1,24 @@
+name: immunoops_flutter_example
+description: Provoca crash, tela lenta e erro de rede para validar o immunoops_flutter no console.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  dio: ^5.4.0
+  flutter:
+    sdk: flutter
+  immunoops_flutter:
+    path: ..
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

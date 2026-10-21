@@ -1,0 +1,34 @@
+name: immunoops_flutter
+description: >-
+  Immuno Ops telemetry for Flutter apps: crashes, screens, jank, startup,
+  network and device health, sent to the Immuno Ops console.
+version: 0.2.0
+repository: https://github.com/immunoops/immunoops-flutter-sdk
+publish_to: none
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+# Wide ranges on purpose: the host app usually pins its own versions of
+# these plugins, and `dart run immunoops_flutter:doctor` reports conflicts.
+dependencies:
+  flutter:
+    sdk: flutter
+  battery_plus: ">=6.0.0 <8.0.0"
+  connectivity_plus: ">=6.0.0 <8.0.0"
+  device_info_plus: ">=11.0.0 <14.0.0"
+  dio: ">=5.4.0 <6.0.0"
+  http: ">=1.1.0 <2.0.0"
+  package_info_plus: ">=8.0.0 <11.0.0"
+  path_provider: ">=2.1.0 <3.0.0"
+  pub_semver: ">=2.1.0 <3.0.0"
+  yaml: ">=3.1.0 <4.0.0"
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+executables:
+  doctor:
