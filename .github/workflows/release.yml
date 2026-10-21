@@ -1,0 +1,105 @@
+# Release of the Flutter SDK. A tag vX.Y.Z (ci.yml already requires it to
+# match pubspec.yaml and CHANGELOG.md) is verified again here, packaged
+# from the tagged commit and published as a versioned generic package in
+# the immunoops-artifacts Artifact Registry ("sdk" repository), then
+# attached to a GitHub Release. Access to GCP is by Workload Identity
+# Federation only (infrastructure ADR-0002): no key is stored anywhere, and
+# only jobs in the GitHub environment "release" can act as ci-sdk-flutter.
+name: release
+
+on:
+  push:
+    tags:
+      - v*
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT: immunoops-artifacts
+  GCP_LOCATION: us-central1
+  GCP_REPOSITORY: sdk
+  GCP_PACKAGE: immunoops-flutter
+  WIF_PROVIDER: projects/880246299331/locations/global/workloadIdentityPools/github-actions/providers/github
+  WIF_SERVICE_ACCOUNT: ci-sdk-flutter@immunoops-bootstrap.iam.gserviceaccount.com
+
+jobs:
+  verify:
+    name: verify tag ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        name: Tag, pubspec and CHANGELOG agree
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          pub="$(grep -E '^version:' pubspec.yaml | awk '{print $2}')"
+          code="$(grep -E "^const sdkVersion" lib/src/core/version.dart | sed -E "s/.*'([^']+)'.*/\1/")"
+          [ "$version" = "$pub" ] || { echo "tag $version != pubspec $pub" >&2; exit 1; }
+          [ "$version" = "$code" ] || { echo "tag $version != version.dart $code" >&2; exit 1; }
+          grep -q "^## $version$" CHANGELOG.md || { echo "CHANGELOG.md has no entry for $version" >&2; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  publish:
+    name: publish ${{ needs.verify.outputs.version }}
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Required reviewers and the "tags v* only" rule live on this
+    # environment; the GCP side only trusts jobs running in it.
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package the tagged commit
+        run: |
+          mkdir dist
+          git archive --format=tar.gz \
+            --prefix="immunoops_flutter-${VERSION}/" \
+            -o "dist/immunoops_flutter-${VERSION}.tar.gz" HEAD
+          (cd dist && sha256sum "immunoops_flutter-${VERSION}.tar.gz" > "immunoops_flutter-${VERSION}.tar.gz.sha256")
+          cat "dist/immunoops_flutter-${VERSION}.tar.gz.sha256"
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: A published version is immutable
+        run: |
+          if gcloud artifacts versions describe "$VERSION" \
+              --package="$GCP_PACKAGE" --repository="$GCP_REPOSITORY" \
+              --location="$GCP_LOCATION" --project="$GCP_PROJECT" >/dev/null 2>&1; then
+            echo "version $VERSION already exists in $GCP_REPOSITORY; bump the version instead" >&2
+            exit 1
+          fi
+      - name: Upload to Artifact Registry
+        run: |
+          gcloud artifacts generic upload \
+            --project="$GCP_PROJECT" --location="$GCP_LOCATION" \
+            --repository="$GCP_REPOSITORY" --package="$GCP_PACKAGE" \
+            --version="$VERSION" --source-directory=dist
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v v="$VERSION" '$0 == "## " v {on=1; next} /^## /{on=0} on' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "immunoops_flutter $VERSION" --notes-file notes.md

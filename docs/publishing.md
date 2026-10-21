@@ -32,8 +32,40 @@ Durante o desenvolvimento, `path:` apontando para a pasta local.
    plataforma.
 2. Atualizar `version` no `pubspec.yaml`, `version.dart` e o `CHANGELOG.md`.
 3. Merge na `main`, tag `vX.Y.Z` no commit do merge.
+4. A tag dispara `.github/workflows/release.yml`: confere tag, pubspec,
+   `version.dart` e CHANGELOG, roda análise e testes, e espera a aprovação
+   do ambiente `release`. Aprovado, empacota o commit da tag e publica
+   `immunoops_flutter-X.Y.Z.tar.gz` (com o `.sha256`) no Artifact Registry
+   do projeto `immunoops-artifacts`, repositório `sdk`, pacote
+   `immunoops-flutter`, e anexa os mesmos arquivos a um GitHub Release.
+   Uma versão já publicada não é sobrescrita: o job falha.
+
+O acesso ao Google Cloud é por Workload Identity Federation (sem chave): só
+jobs do ambiente `release` deste repositório podem usar a conta de serviço
+`ci-sdk-flutter` (infraestrutura: `immunoops-infrastructure`, módulo
+`github-wif`).
+
+### Ambiente `release` no GitHub
+
+Settings › Environments › `release`: revisores obrigatórios e regra de
+tags (`v*`) como as únicas permitidas a implantar. Sem esse ambiente, o
+GCP recusa o job.
+
+### Baixar uma versão publicada
+
+```sh
+gcloud artifacts generic download \
+  --project=immunoops-artifacts --location=us-central1 --repository=sdk \
+  --package=immunoops-flutter --version=X.Y.Z --destination=./sdk
+```
+
+Exige a role de leitura no repositório `sdk` (variável `sdk_reader_members`
+no Terraform).
 
 ## Em aberto
 
 Decidir entre pub.dev (se o SDK for aberto, Apache-2.0) e um repositório
-pub privado. A troca muda só o bloco de dependência acima.
+pub privado. A troca muda só o bloco de dependência acima. O Artifact
+Registry não tem formato Dart, por isso a release fica como pacote genérico
+versionado, e os apps seguem por `git` + tag. Enquanto a `LICENSE` for
+proprietária, publicar no pub.dev não é uma opção.
