@@ -1,4 +1,4 @@
-## Não lançado
+## 0.2.1
 
 Ajustes da integração no app CRIA.
 

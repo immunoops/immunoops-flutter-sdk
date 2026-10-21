@@ -10,7 +10,7 @@ dependencies:
   immunoops_flutter:
     git:
       url: https://github.com/immunoops/immunoops-flutter-sdk.git
-      ref: v0.2.0
+      ref: v0.2.1
 ```
 
 Durante o desenvolvimento, `path:` apontando para a pasta local.
