@@ -1,3 +1,10 @@
+## Não lançado
+
+- Documentação: `docs/setup.md`, o setup completo num app (chave e
+  ambiente, dependência, init, telas, rede, jornadas, Android, iOS, web,
+  conferência e problemas conhecidos), e o modelo
+  `docs/templates/PrivacyInfo.xcprivacy`.
+
 ## 0.2.1
 
 Ajustes da integração no app CRIA.

@@ -13,7 +13,11 @@ Flutter 3.24+ ([compatibilidade](docs/compatibility.md)).
 
 ## Integração
 
-1. Gere a chave na tela Instrumentação do console.
+Passo a passo completo, com Android, iOS (manifesto de privacidade), web,
+jornadas e os problemas já vistos: [docs/setup.md](docs/setup.md). O resumo:
+
+1. Gere a chave na tela Instrumentação do console (vale só no ambiente do
+   console que a gerou: use o endpoint que ele mostra).
 2. Adicione a dependência ([versões](docs/publishing.md)):
 
    ```yaml
@@ -219,6 +223,7 @@ debug eles também saem no console.
 
 ## Documentação
 
+- [Setup num app](docs/setup.md)
 - [Arquitetura (ADRs)](docs/architecture/)
 - [Instrumentação: sinais e atributos](docs/instrumentation.md)
 - [Compatibilidade](docs/compatibility.md)
