@@ -21,7 +21,7 @@ Flutter 3.24+ ([compatibilidade](docs/compatibility.md)).
      immunoops_flutter:
        git:
          url: https://github.com/immunoops/immunoops-flutter-sdk.git
-         ref: v0.2.0
+         ref: v0.2.1
    ```
 
 3. Três pontos no código:
