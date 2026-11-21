@@ -47,19 +47,17 @@ dependencies:
 
 `path:` só serve na máquina de quem desenvolve: o build do app em CI ou
 Docker não enxerga a pasta. Antes de qualquer build de entrega, troque para
-a tag:
+o pacote no pub.dev (publisher
+[immunoops.io](https://pub.dev/publishers/immunoops.io)):
 
 ```yaml
 dependencies:
-  immunoops_flutter:
-    git:
-      url: https://github.com/immunoops/immunoops-flutter-sdk.git
-      ref: v0.2.1
+  immunoops_flutter: ^0.2.1
 ```
 
-O repositório é privado: quem roda o `pub get` (máquina e CI do app)
-precisa de leitura nele. No CI, um token de leitura ou uma deploy key. O
-tarball do Artifact Registry é a outra via ([publicação](publishing.md)).
+Não precisa de token nem de acesso ao GitHub: o `flutter pub get` baixa
+de [pub.dev/packages/immunoops_flutter](https://pub.dev/packages/immunoops_flutter).
+Versões e o que cada tag publica estão em [publicação](publishing.md).
 
 Depois do `flutter pub get`, rode o doctor (passo 6): ele acusa conflito de
 versão de plugin e plugin que o Android do app não compila.
@@ -243,11 +241,11 @@ emulador Android, o Mac é `10.0.2.2`). Foi assim que o CRIA foi validado.
 | Telas chegam como `_CustomTransitionPageRoute` | SDK anterior a 0.2.1 com `pageBuilder:` | SDK 0.2.1+ |
 | `memory_pressure` toda vez que o app sai da tela (Android) | SDK anterior a 0.2.1 | SDK 0.2.1+ |
 | Emulador Android sem rede (`dns_error`) | DNS IPv6 do Mac, que o emulador não usa | `emulator -avd <nome> -dns-server 8.8.8.8` |
-| Build web do app no Docker não acha o SDK | Dependência por `path:` | Trocar para `git:` com `ref` (passo 2) |
+| Build web do app no Docker não acha o SDK | Dependência por `path:` | Trocar para `immunoops_flutter: ^0.2.1` (passo 2) |
 
 ## Atualizar
 
-Troque o `ref` para a nova tag e rode `flutter pub get`. Leia o
+Suba o teto em `immunoops_flutter: ^x.y.z` e rode `flutter pub get`. Leia o
 [CHANGELOG](../CHANGELOG.md) antes: enquanto for 0.x, subir o minor (0.2 →
 0.3) pode mudar nomes de métricas e atributos. Correções ficam no patch.
 Toda telemetria leva `telemetry.sdk.version`, então o console mostra qual

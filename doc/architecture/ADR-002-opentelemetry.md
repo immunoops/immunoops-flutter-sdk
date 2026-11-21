@@ -13,7 +13,7 @@ existente (`/v1/metrics`, `/v1/logs`) não alimenta essas telas.
 ## Decisão
 
 1. **Nomes:** os atributos seguem o OpenTelemetry onde existe convenção,
-   e o resto tem nome do Immuno Ops, listado em `docs/instrumentation.md`.
+   e o resto tem nome do Immuno Ops, listado em `doc/instrumentation.md`.
    Exemplos: `service.name`, `service.version`,
    `deployment.environment.name`, `os.*`, `device.*`,
    `app.installation.id`, `session.id`, `http.request.method`,

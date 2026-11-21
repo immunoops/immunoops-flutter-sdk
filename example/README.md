@@ -1,6 +1,6 @@
 # Loja exemplo do immunoops_flutter
 
-A loja do cenário de `docs/simulation.md`: uma home e um checkout com a
+A loja do cenário de `doc/simulation.md`: uma home e um checkout com a
 jornada `checkout.payment`. Cada botão "Pagar" reproduz um momento do
 incidente INC-ANDROID-204 (sucesso, lentidão, timeout, 504, 500, crash), e
 a home tem tela lenta, erro de build, erro assíncrono e pressão de memória.

@@ -9,7 +9,7 @@ import 'package:immunoops_flutter_example/main.dart';
 import 'package:immunoops_flutter_example/payment_repository.dart';
 import 'package:integration_test/integration_test.dart';
 
-// The INC-ANDROID-204 checkout incident (docs/simulation.md) on a real
+// The INC-ANDROID-204 checkout incident (doc/simulation.md) on a real
 // platform, against a local server that plays both the payment API and
 // the Immuno Ops ingest route:
 //   flutter test integration_test -d <device>

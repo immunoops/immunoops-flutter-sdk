@@ -23,7 +23,7 @@
 | Web | build JS e Wasm | compilação, sem execução |
 | App CRIA | `pubspec.lock` real | resolução de dependências sem conflito |
 
-O ponta a ponta reproduz o incidente de checkout de `docs/simulation.md`
+O ponta a ponta reproduz o incidente de checkout de `doc/simulation.md`
 contra um servidor local que faz o papel da API de pagamento e da
 ingestão.
 

@@ -1,6 +1,6 @@
 /// Attribute names. Where OpenTelemetry has a convention, its name is used
-/// (see docs/architecture/ADR-002-opentelemetry.md); the rest are Immuno
-/// Ops names, marked as such in docs/instrumentation.md.
+/// (see doc/architecture/ADR-002-opentelemetry.md); the rest are Immuno
+/// Ops names, marked as such in doc/instrumentation.md.
 abstract final class Attr {
   // Resource (OpenTelemetry).
   static const serviceName = 'service.name';

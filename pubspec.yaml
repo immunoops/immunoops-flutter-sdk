@@ -4,7 +4,8 @@ description: >-
   network and device health, sent to the Immuno Ops console.
 version: 0.2.1
 repository: https://github.com/immunoops/immunoops-flutter-sdk
-publish_to: none
+issue_tracker: https://github.com/immunoops/immunoops-flutter-sdk/issues
+homepage: https://docs.immunoops.io/
 
 environment:
   sdk: ">=3.5.0 <4.0.0"

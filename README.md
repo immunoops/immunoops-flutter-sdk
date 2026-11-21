@@ -9,24 +9,24 @@ conexão do app: **Logs** (erros, ao vivo) e **Ver telemetria** (métricas e
 eventos por período).
 
 Plataformas: Android, iOS e macOS; web em modo reduzido. Dart 3.5+ e
-Flutter 3.24+ ([compatibilidade](docs/compatibility.md)).
+Flutter 3.24+ ([compatibilidade](doc/compatibility.md)).
 
 ## Integração
 
 Passo a passo completo, com Android, iOS (manifesto de privacidade), web,
-jornadas e os problemas já vistos: [docs/setup.md](docs/setup.md). O resumo:
+jornadas e os problemas já vistos: [doc/setup.md](doc/setup.md). O resumo:
 
 1. Gere a chave na tela Instrumentação do console (vale só no ambiente do
    console que a gerou: use o endpoint que ele mostra).
-2. Adicione a dependência ([versões](docs/publishing.md)):
+2. Adicione a dependência ([versões](doc/publishing.md)):
 
    ```yaml
    dependencies:
-     immunoops_flutter:
-       git:
-         url: https://github.com/immunoops/immunoops-flutter-sdk.git
-         ref: v0.2.1
+     immunoops_flutter: ^0.2.1
    ```
+
+   O pacote está no [pub.dev](https://pub.dev/packages/immunoops_flutter),
+   no publisher [immunoops.io](https://pub.dev/publishers/immunoops.io).
 
 3. Três pontos no código:
 
@@ -91,9 +91,9 @@ sessão conta como `abandoned`.
 
 ## O que é coletado
 
-Nomes e atributos completos em [docs/instrumentation.md](docs/instrumentation.md).
+Nomes e atributos completos em [doc/instrumentation.md](doc/instrumentation.md).
 Os atributos seguem as convenções do OpenTelemetry onde elas existem
-([ADR-002](docs/architecture/ADR-002-opentelemetry.md)).
+([ADR-002](doc/architecture/ADR-002-opentelemetry.md)).
 
 | Captura | Como chega |
 | --- | --- |
@@ -162,13 +162,13 @@ await ImmunoOps.flush();
 - Mascaramento no aparelho: CPF, cartão, e-mail, tokens, query string de
   URLs e chaves sensíveis. Nada de nome, telefone, IP ou id do aparelho; da
   rede, só tempo, código, método, host e rota como template
-  ([ADR-003](docs/architecture/ADR-003-privacy-security.md)).
+  ([ADR-003](doc/architecture/ADR-003-privacy-security.md)).
 - Lojas: declare *Crash Data* e *Performance Data* (sem vínculo ao usuário,
   sem rastreamento) no `PrivacyInfo.xcprivacy` e na App Store; os mesmos
   tipos no Data Safety do Google Play.
 
 Custo medido por chamada: 3 a 6 µs para métrica, log e evento
-([docs/overhead.md](docs/overhead.md)).
+([doc/overhead.md](doc/overhead.md)).
 
 ## Doctor
 
@@ -212,7 +212,7 @@ debug eles também saem no console.
 ## Limitações
 
 - ANR, crash nativo e OutOfMemory não são capturados: exigem código nativo
-  (v2, [ADR-001](docs/architecture/ADR-001-sdk-modularity.md)).
+  (v2, [ADR-001](doc/architecture/ADR-001-sdk-modularity.md)).
 - A abertura cold começa no `init`, não no início do processo.
 - Builds com `--obfuscate` enviam stack traces ofuscados; a desofuscação no
   servidor ainda não existe.
@@ -223,13 +223,13 @@ debug eles também saem no console.
 
 ## Documentação
 
-- [Setup num app](docs/setup.md)
-- [Arquitetura (ADRs)](docs/architecture/)
-- [Instrumentação: sinais e atributos](docs/instrumentation.md)
-- [Compatibilidade](docs/compatibility.md)
-- [Simulação do incidente de checkout](docs/simulation.md)
-- [Custo no app](docs/overhead.md)
-- [Publicação e versões](docs/publishing.md)
+- [Setup num app](doc/setup.md)
+- [Arquitetura (ADRs)](doc/architecture/)
+- [Instrumentação: sinais e atributos](doc/instrumentation.md)
+- [Compatibilidade](doc/compatibility.md)
+- [Simulação do incidente de checkout](doc/simulation.md)
+- [Custo no app](doc/overhead.md)
+- [Publicação e versões](doc/publishing.md)
 
 ## Desenvolvimento
 

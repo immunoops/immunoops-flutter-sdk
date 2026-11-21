@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 /// What the simulated payment API does on the next call, one per row of
-/// the INC-ANDROID-204 timeline (docs/simulation.md).
+/// the INC-ANDROID-204 timeline (doc/simulation.md).
 enum PaymentScenario { success, slow, timeout, gateway504, serverError, crash }
 
 /// The payment API of the sample store. [baseUrl] points at any server

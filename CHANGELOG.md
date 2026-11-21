@@ -1,9 +1,11 @@
 ## Não lançado
 
-- Documentação: `docs/setup.md`, o setup completo num app (chave e
+- Distribuição: o pacote passa a ser publicado no pub.dev, no publisher
+  `immunoops.io`. O app depende de `immunoops_flutter: ^0.2.1`.
+- Documentação: `doc/setup.md`, o setup completo num app (chave e
   ambiente, dependência, init, telas, rede, jornadas, Android, iOS, web,
   conferência e problemas conhecidos), e o modelo
-  `docs/templates/PrivacyInfo.xcprivacy`.
+  `doc/templates/PrivacyInfo.xcprivacy`.
 
 ## 0.2.1
 
@@ -39,7 +41,7 @@ simulação de incidentes), adaptado de Kotlin para Flutter.
 - Abertura warm, pressão de memória, rede perdida e restaurada, sessão
   anterior ligada à nova.
 - Atributos nas convenções do OpenTelemetry e `event.type` por tipo de
-  sinal. Quebra os nomes da 0.1.0 (ver `docs/instrumentation.md`).
+  sinal. Quebra os nomes da 0.1.0 (ver `doc/instrumentation.md`).
 - Documentação: ADRs, instrumentação, compatibilidade, publicação,
   simulação do incidente e custo medido.
 - App de exemplo como loja com checkout reproduzindo o incidente, e teste

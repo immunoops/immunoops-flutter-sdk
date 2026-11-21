@@ -2,7 +2,7 @@
 # the oldest supported Flutter and on stable, the doctor's own check, and
 # the example's web build (proves no dart:io leaks into web code). A tag
 # vX.Y.Z must match the pubspec version, so a published
-# tag always names the code it says it does (docs/publishing.md).
+# tag always names the code it says it does (doc/publishing.md).
 name: ci
 
 on:
@@ -49,6 +49,9 @@ jobs:
         run: dart format --output=none --set-exit-if-changed lib test bin
       - run: flutter analyze
       - run: flutter test
+      # Same checks pub.dev runs. Stable only: the publish job uses stable.
+      - if: matrix.label == 'stable'
+        run: dart pub publish --dry-run
       - name: Doctor runs as a plain Dart command
         run: dart run bin/doctor.dart --project example --json > /dev/null
 

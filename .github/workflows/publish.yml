@@ -1,0 +1,55 @@
+# Publishes immunoops_flutter to pub.dev. A tag vX.Y.Z (the same one
+# release.yml already checks against pubspec.yaml and CHANGELOG.md) is
+# checked again here, then published with the official Dart workflow.
+# pub.dev authenticates the job by GitHub OIDC: no token is stored.
+# The package admin must allow this repository, the tag pattern
+# v{{version}}, and the environment "release" (doc/publishing.md).
+# The first version is published by a person with dart pub publish, then
+# transferred to the publisher immunoops.io. This workflow only publishes
+# versions after that.
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: verify tag ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag, pubspec and CHANGELOG agree
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          pub="$(grep -E '^version:' pubspec.yaml | awk '{print $2}')"
+          code="$(grep -E "^const sdkVersion" lib/src/core/version.dart | sed -E "s/.*'([^']+)'.*/\1/")"
+          [ "$version" = "$pub" ] || { echo "tag $version != pubspec $pub" >&2; exit 1; }
+          [ "$version" = "$code" ] || { echo "tag $version != version.dart $code" >&2; exit 1; }
+          grep -q "^## $version$" CHANGELOG.md || { echo "CHANGELOG.md has no entry for $version" >&2; exit 1; }
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  publish:
+    name: publish to pub.dev
+    needs: verify
+    permissions:
+      contents: read
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      environment: release
