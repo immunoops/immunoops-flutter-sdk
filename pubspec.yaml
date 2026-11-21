@@ -2,7 +2,7 @@ name: immunoops_flutter
 description: >-
   Immuno Ops telemetry for Flutter apps: crashes, screens, jank, startup,
   network and device health, sent to the Immuno Ops console.
-version: 0.2.1
+version: 0.2.2
 repository: https://github.com/immunoops/immunoops-flutter-sdk
 issue_tracker: https://github.com/immunoops/immunoops-flutter-sdk/issues
 homepage: https://docs.immunoops.io/

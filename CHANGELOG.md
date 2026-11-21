@@ -1,11 +1,8 @@
-## Não lançado
+## 0.2.2
 
-- Distribuição: o pacote passa a ser publicado no pub.dev, no publisher
-  `immunoops.io`. O app depende de `immunoops_flutter: ^0.2.1`.
-- Documentação: `doc/setup.md`, o setup completo num app (chave e
-  ambiente, dependência, init, telas, rede, jornadas, Android, iOS, web,
-  conferência e problemas conhecidos), e o modelo
-  `doc/templates/PrivacyInfo.xcprivacy`.
+O Material saiu do Flutter estável e foi para o pacote `material_ui`.
+O exemplo acompanha isso. Os testes de tela usam `WidgetsApp`, que
+continua no Flutter 3.24.
 
 ## 0.2.1
 

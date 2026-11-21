@@ -22,7 +22,7 @@ jornadas e os problemas já vistos: [doc/setup.md](doc/setup.md). O resumo:
 
    ```yaml
    dependencies:
-     immunoops_flutter: ^0.2.1
+     immunoops_flutter: ^0.2.2
    ```
 
    O pacote está no [pub.dev](https://pub.dev/packages/immunoops_flutter),

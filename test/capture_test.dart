@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -89,7 +89,10 @@ void main() {
           ],
         );
         addTearDown(router.dispose);
-        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpWidget(WidgetsApp.router(
+          color: const Color(0xFF2196F3),
+          routerConfig: router,
+        ));
         Future<void> settle() async {
           await tester.pumpAndSettle();
           await tester.pump(const Duration(milliseconds: 1));
@@ -121,18 +124,19 @@ void main() {
     testWidgets('with no router, an unnamed page is named by its widget',
         (tester) async {
       final navigator = GlobalKey<NavigatorState>();
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(_Host(
         navigatorKey: navigator,
-        navigatorObservers: [ImmunoOpsNavigatorObserver(() => tracker)],
-        home: const Text('home'),
+        observers: [ImmunoOpsNavigatorObserver(() => tracker)],
+        routes: const {'/': _home},
       ));
       navigator.currentState!.push(
           const _Page(child: _Splash()).createRoute(navigator.currentContext!));
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 1));
-      // A MaterialPageRoute with no name says nothing: not a screen.
-      navigator.currentState!
-          .push(MaterialPageRoute<void>(builder: (_) => const Text('x')));
+      // A page route with no name says nothing: not a screen.
+      navigator.currentState!.push(PageRouteBuilder<void>(
+        pageBuilder: (_, __, ___) => const Text('x'),
+      ));
       await tester.pumpAndSettle();
       await tester.runAsync(() => Future<void>.delayed(Duration.zero));
 
@@ -142,21 +146,21 @@ void main() {
 
     testWidgets('pages become screens; dialogs do not', (tester) async {
       final navigator = GlobalKey<NavigatorState>();
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(_Host(
         navigatorKey: navigator,
-        navigatorObservers: [ImmunoOpsNavigatorObserver(() => tracker)],
+        observers: [ImmunoOpsNavigatorObserver(() => tracker)],
         initialRoute: 'home',
-        routes: {
-          'home': (_) => const Text('home'),
-          '/aulas/42': (_) => const Text('aula'),
+        routes: const {
+          'home': _home,
+          '/aulas/42': _aula,
         },
       ));
       now = now.add(const Duration(seconds: 3));
       navigator.currentState!.pushNamed('/aulas/42');
       await tester.pumpAndSettle();
-      showDialog<void>(
+      showGeneralDialog<void>(
         context: navigator.currentContext!,
-        builder: (_) => const Text('dialog'),
+        pageBuilder: (_, __, ___) => const Text('dialog'),
       );
       await tester.pumpAndSettle();
       navigator.currentState!.pop();
@@ -432,6 +436,41 @@ class _ThrowingSink extends FakeSink {
     Map<String, Object?> context = const {},
   }) =>
       throw StateError('sink broke');
+}
+
+Widget _home(BuildContext context) => const Text('home');
+
+Widget _aula(BuildContext context) => const Text('aula');
+
+/// WidgetsApp host so screen tests keep running on Flutter 3.24.
+class _Host extends StatelessWidget {
+  const _Host({
+    required this.navigatorKey,
+    required this.observers,
+    required this.routes,
+    this.initialRoute,
+  });
+
+  final GlobalKey<NavigatorState> navigatorKey;
+  final List<NavigatorObserver> observers;
+  final Map<String, WidgetBuilder> routes;
+  final String? initialRoute;
+
+  @override
+  Widget build(BuildContext context) => WidgetsApp(
+        color: const Color(0xFF2196F3),
+        navigatorKey: navigatorKey,
+        navigatorObservers: observers,
+        initialRoute: initialRoute,
+        onGenerateRoute: (settings) {
+          final builder = routes[settings.name];
+          if (builder == null) return null;
+          return PageRouteBuilder<void>(
+            settings: settings,
+            pageBuilder: (context, _, __) => builder(context),
+          );
+        },
+      );
 }
 
 /// Like go_router's CustomTransitionPage: a Page with a `child` and no name.

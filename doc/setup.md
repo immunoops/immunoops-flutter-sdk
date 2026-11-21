@@ -52,7 +52,7 @@ o pacote no pub.dev (publisher
 
 ```yaml
 dependencies:
-  immunoops_flutter: ^0.2.1
+  immunoops_flutter: ^0.2.2
 ```
 
 Não precisa de token nem de acesso ao GitHub: o `flutter pub get` baixa
@@ -241,7 +241,7 @@ emulador Android, o Mac é `10.0.2.2`). Foi assim que o CRIA foi validado.
 | Telas chegam como `_CustomTransitionPageRoute` | SDK anterior a 0.2.1 com `pageBuilder:` | SDK 0.2.1+ |
 | `memory_pressure` toda vez que o app sai da tela (Android) | SDK anterior a 0.2.1 | SDK 0.2.1+ |
 | Emulador Android sem rede (`dns_error`) | DNS IPv6 do Mac, que o emulador não usa | `emulator -avd <nome> -dns-server 8.8.8.8` |
-| Build web do app no Docker não acha o SDK | Dependência por `path:` | Trocar para `immunoops_flutter: ^0.2.1` (passo 2) |
+| Build web do app no Docker não acha o SDK | Dependência por `path:` | Trocar para `immunoops_flutter: ^0.2.2` (passo 2) |
 
 ## Atualizar
 
