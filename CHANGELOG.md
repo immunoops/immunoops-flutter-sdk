@@ -1,8 +1,9 @@
 ## 0.2.2
 
-O Material saiu do Flutter estável e foi para o pacote `material_ui`.
-O exemplo acompanha isso. Os testes de tela usam `WidgetsApp`, que
-continua no Flutter 3.24.
+O Flutter estável avisa para trocar `package:flutter/material.dart` pelo
+pacote `material_ui`, que pede Dart 3.12. O exemplo continua no import do
+framework, senão o Flutter 3.24 não resolve as dependências. Os testes de
+tela usam `WidgetsApp`, que existe nos dois.
 
 ## 0.2.1
 
