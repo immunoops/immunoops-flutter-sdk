@@ -8,7 +8,7 @@ dele por versão:
 
 ```yaml
 dependencies:
-  immunoops_flutter: ^0.2.1
+  immunoops_flutter: ^0.2.2
 ```
 
 Página do pacote:
